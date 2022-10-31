@@ -20,20 +20,22 @@ use App\Models\User;
 
 Route::get('/', function () {
     return view('home', [
-        "title" => "Home"
+        "title" => "Home",
+        "active" => "home"
     ]);
 });
 
 Route::get('/about', function () {
     return view('about', [
         "title" => "About",
+        "active" => "about",
         "name" => "Chairunissa",
         "email" => "203040048@mail.unpas.ac.id",
         "image" => "ica.jpg"
     ]);
 });
 
-Route::get('/blog', [PostController::class, 'index']);
+Route::get('/posts', [PostController::class, 'index']);
 
 //Halaman Single post
 Route::get('posts/{post:slug}', [PostController::class, 'show']);
@@ -43,20 +45,5 @@ Route::get('/categories', function () {
         'title' => 'Post Categories',
         'active' => 'categories',
         'categories' => Category::all()
-    ]);
-});
-
-Route::get('/categories/{category:slug}', function (Category $category) {
-    return view('posts', [
-        'title' => "Post By Category : $category->name",
-        'active' => 'categories',
-        'posts' => $category->posts->load('category', 'author')
-    ]);
-});
-
-Route::get('/authors/{author:username}', function (User $author) {
-    return view('posts', [
-        'title' => "Post By Author : $author->name",
-        'posts' => $author->posts->load('category', 'author'),
     ]);
 });
