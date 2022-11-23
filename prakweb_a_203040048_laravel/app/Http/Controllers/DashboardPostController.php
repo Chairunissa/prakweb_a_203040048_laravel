@@ -42,17 +42,24 @@ class DashboardPostController extends Controller
      */
     public function store(Request $request)
     {
-        $validateData = $request->validate([
+
+        $validatedData = $request->validate([
             'title' => 'required|max:255',
             'slug' => 'required|unique:posts',
             'category_id' => 'required',
+            'image' => 'image|file|max:1024',
             'body' => 'required'
         ]);
 
-        $validateData['user_id'] = auth()->user()->id;
-        $validateData['excerpt'] = Str::limit(strip_tags($request->body), 200);
+        if ($request->file('image')) {
 
-        Post::create($validateData);
+            $validatedData['image'] = $request->file('image')->store('post-images');
+        }
+
+        $validatedData['user_id'] = auth()->user()->id;
+        $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 200);
+
+        Post::create($validatedData);
 
         return redirect('dashboard/posts')->with('success', 'New post has been added!');
     }
@@ -91,15 +98,16 @@ class DashboardPostController extends Controller
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, Post $posts)
     {
-        $rules = [
+        $rules = ([
             'title' => 'required|max:255',
             'category_id' => 'required',
+            'slug' => 'required|unique:posts',
             'body' => 'required'
-        ];
+        ]);
 
-        if ($request->slug != $post->slug) {
+        if ($request->slug != $posts->slug) {
             $rules['slug'] = 'required|unique:posts';
         }
 
@@ -108,7 +116,7 @@ class DashboardPostController extends Controller
         $validateData['user_id'] = auth()->user()->id;
         $validateData['excerpt'] = Str::limit(strip_tags($request->body), 200);
 
-        Post::where('id', $post->id)
+        Post::where('id', $posts->id)
             ->update($validateData);
 
         return redirect('dashboard/posts')->with('success', 'Post has been updated!');
